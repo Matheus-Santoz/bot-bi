@@ -7,7 +7,7 @@ import os
 
 CLIENT_ID = os.environ.get("BLING_CLIENT_ID")
 CLIENT_SECRET = os.environ.get("BLING_CLIENT_SECRET")
-NOME_PLANILHA = 'Relatorio Financeiro Bling'
+NOME_PLANILHA = 'Teste power bi'
 
 CREDENCIAIS_GOOGLE_JSON = os.environ.get("GOOGLE_CREDENTIALS")
 
@@ -81,4 +81,5 @@ if __name__ == '__main__':
     dados = buscar_compras()
 
     enviar_dados(dados)
+
 
