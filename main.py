@@ -57,15 +57,33 @@ def buscar_compras():
         return []
 
 def enviar_dados(dados):
-    if not dados: return
-    df = pd.DataFrame(dados) # (Adicione seu tratamento aqui igual antes)
+    if not dados: 
+        print("Nenhum dado encontrado para enviar.")
+        return
+    lista_organizada = []
+    for venda in dados:
+        lista_organizada.append({
+            "ID": venda.get('id'),
+            "Número": venda.get('numero'),
+            "Data": venda.get('data'),
+            "Cliente": venda.get('contato', {}).get('nome'),
+            "Valor Total": venda.get('total'),
+            "Situação": venda.get('situacao', {}).get('valor') 
+        })
+
+    df = pd.DataFrame(lista_organizada)
     
     client = conectar_google()
-    sheet = client.open(NOME_PLANILHA).worksheet('Página1') # Aba de dados
+    try:
+        sheet = client.open(NOME_PLANILHA).worksheet('Página1')
+    except:
+        sheet = client.open(NOME_PLANILHA).sheet1
+        
     sheet.clear()
     sheet.update([df.columns.values.tolist()] + df.values.tolist())
-    print("Planilha atualizada!")
+    print(f"Sucesso! {len(df)} vendas enviadas para a planilha.")
 
 if __name__ == '__main__':
     dados = buscar_compras()
+
     enviar_dados(dados)
