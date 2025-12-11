@@ -5,6 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from requests_oauthlib import OAuth2Session
 import os
 import time
+from datetime import datetime
 
 CLIENT_ID = os.environ.get("BLING_CLIENT_ID")
 CLIENT_SECRET = os.environ.get("BLING_CLIENT_SECRET")
@@ -34,9 +35,16 @@ def gerenciar_token(acao, token_novo=None):
     if acao == 'salvar':
         try:
             sheet.update_acell('B1', json.dumps(token_novo))
-            print("--- TOKEN SALVO COM SUCESSO NA PLANILHA ---")
+            
+            agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            
+            sheet.update_acell('C1', 'Última Renovação:')
+            sheet.update_acell('D1', agora)
+            
+            print(f"--- TOKEN RENOVADO E DATA REGISTRADA ({agora}) NA PLANILHA ---")
+            
         except Exception as e:
-            print(f"ERRO CRÍTICO AO SALVAR TOKEN: {e}")
+            print(f"ERRO CRÍTICO AO SALVAR TOKEN/DATA: {e}")
 
 def buscar_compras():
     print("Conectando ao Bling...")
@@ -54,7 +62,7 @@ def buscar_compras():
         print(f"Tempo restante do token: {int(tempo_restante/60)} minutos.")
 
         if tempo_restante < MARGEM_SEGURANCA_SEGUNDOS:
-            print("Token próximo do fim. Force renovação")
+            print("token proximo do fim")
 
             try:
                 bling_temp = OAuth2Session(CLIENT_ID, token=token)
@@ -74,12 +82,10 @@ def buscar_compras():
             token = novo_token
         except Exception as e:
              print(f"Erro na renovação forçada: {e}")
-
     bling = OAuth2Session(CLIENT_ID, token=token, 
                           auto_refresh_url=refresh_url, 
                           auto_refresh_kwargs=extra, 
                           token_updater=lambda t: gerenciar_token('salvar', t))
-
     url = 'https://www.bling.com.br/Api/v3/pedidos/vendas'
     
     resp = bling.get(url)
